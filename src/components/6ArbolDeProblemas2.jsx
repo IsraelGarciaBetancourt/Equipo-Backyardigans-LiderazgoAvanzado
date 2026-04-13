@@ -95,7 +95,7 @@ const getRootBorderColor = (colorTema) => {
   return colors[colorTema] || "border-amber-400";
 };
 
-// ── El árbol en sí (reutilizable en desktop y en fullscreen móvil) ──────────
+// ── El árbol en sí (reutilizable) ───────────────────────────────────────────
 function ArbolContent({ hoveredIndex, setHoveredIndex }) {
   return (
     <div className="relative min-w-[1080px]" style={{ height: "850px" }}>
@@ -211,7 +211,7 @@ function ArbolContent({ hoveredIndex, setHoveredIndex }) {
       {/* BASE */}
       <div className="absolute left-1/2 top-[620px] -translate-x-1/2 w-[640px] h-32 bg-gradient-to-r from-[#3e2723] via-[#4e342e] to-[#2c211b] rounded-[50%] shadow-[0_-10px_30px_rgba(0,0,0,0.3)] z-10" />
 
-      {/* RAÍCES (CAUSAS) — FIX: overflow visible + animate width */}
+      {/* RAÍCES (CAUSAS) */}
       <div
         className="absolute left-1/2 top-[650px] -translate-x-1/2 z-30 w-[1080px] px-4"
         style={{ overflow: "visible" }}
@@ -226,7 +226,6 @@ function ArbolContent({ hoveredIndex, setHoveredIndex }) {
                 key={`causa-${nodo.id}`}
                 onMouseEnter={() => setHoveredIndex(nodo.id)}
                 onMouseLeave={() => setHoveredIndex(null)}
-                // FIX: animar el ancho + mover hacia abajo al expandirse
                 animate={{
                   width: isHovered ? "220px" : "192px",
                   y: isHovered ? 8 : 0,
@@ -279,8 +278,11 @@ export default function ArbolDeProblemasRealista() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [containerScale, setContainerScale] = useState(1);
   const fullscreenRef = useRef(null);
+  const treeContainerRef = useRef(null);
 
+  // Detectar móvil
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -288,7 +290,7 @@ export default function ArbolDeProblemasRealista() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Escuchar salida de fullscreen por botón nativo del dispositivo
+  // Escuchar salida de fullscreen
   useEffect(() => {
     const onFsChange = () => {
       if (!document.fullscreenElement) setIsFullscreen(false);
@@ -297,48 +299,65 @@ export default function ArbolDeProblemasRealista() {
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
+  // Escalado automático
+  useEffect(() => {
+    const updateScale = () => {
+      if (!treeContainerRef.current) return;
+      const container = treeContainerRef.current;
+      let containerWidth = container.clientWidth;
+      let containerHeight = container.clientHeight;
+
+      if (isMobile && isFullscreen) {
+        containerHeight = window.innerHeight - 70; // header
+      }
+
+      const scaleX = containerWidth / 1080;
+      const scaleY = containerHeight / 850;
+      const newScale = Math.min(scaleX, scaleY, 1); // nunca más grande que 1x
+
+      setContainerScale(newScale);
+    };
+
+    const resizeObserver = new ResizeObserver(updateScale);
+    if (treeContainerRef.current) resizeObserver.observe(treeContainerRef.current);
+
+    window.addEventListener("resize", updateScale);
+    const timer = setTimeout(updateScale, 100);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateScale);
+      clearTimeout(timer);
+    };
+  }, [isMobile, isFullscreen]);
+
   const handleOpenFullscreen = async () => {
     setIsFullscreen(true);
-    try {
-      await document.documentElement.requestFullscreen();
-    } catch (_) {}
-    try {
-      await screen.orientation.lock("landscape");
-    } catch (_) {}
+    try { await document.documentElement.requestFullscreen(); } catch (_) {}
+    try { await screen.orientation.lock("landscape"); } catch (_) {}
   };
 
   const handleCloseFullscreen = async () => {
     setIsFullscreen(false);
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-    } catch (_) {}
-    try {
-      screen.orientation.unlock();
-    } catch (_) {}
+    try { if (document.fullscreenElement) await document.exitFullscreen(); } catch (_) {}
+    try { screen.orientation.unlock(); } catch (_) {}
   };
 
-  // ── Vista móvil: pantalla de inicio ────────────────────────────────────────
+  // Vista móvil inicial
   if (isMobile && !isFullscreen) {
     return (
       <section className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 to-emerald-50 px-6 font-sans">
-        {/* Árbol decorativo pequeño */}
         <div className="relative mb-8 flex flex-col items-center">
           <div className="w-40 h-28 bg-emerald-600 rounded-[50%_50%_38%_38%] shadow-xl" />
           <div className="w-6 h-16 bg-[#5d4037] rounded-b-xl -mt-2 shadow" />
           <div className="w-24 h-4 bg-[#4e342e] rounded-full -mt-1 shadow" />
         </div>
-
-        <h1 className="text-3xl font-extrabold text-slate-800 text-center tracking-tight mb-2">
-          El Árbol del Declive
-        </h1>
+        <h1 className="text-3xl font-extrabold text-slate-800 text-center tracking-tight mb-2">El Árbol del Declive</h1>
         <p className="text-slate-500 text-center text-sm mb-2 max-w-xs leading-relaxed">
           Este diagrama interactivo está optimizado para verse en pantalla completa en modo horizontal.
         </p>
-        <p className="text-slate-400 text-center text-xs mb-8 max-w-xs">
-          Toca el botón, gira tu celular y explora causas y efectos con el dedo.
-        </p>
+        <p className="text-slate-400 text-center text-xs mb-8 max-w-xs">Toca el botón, gira tu celular y explora causas y efectos con el dedo.</p>
 
-        {/* Animación de rotar */}
         <motion.div
           animate={{ rotate: [0, 90, 90, 0] }}
           transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1.5 }}
@@ -364,15 +383,14 @@ export default function ArbolDeProblemasRealista() {
     );
   }
 
-  // ── Vista fullscreen móvil ──────────────────────────────────────────────────
+  // Vista fullscreen móvil
   if (isMobile && isFullscreen) {
     return (
       <div
         ref={fullscreenRef}
-        className="fixed inset-0 z-[9999] bg-gradient-to-b from-sky-50 to-emerald-50/30 overflow-auto"
+        className="fixed inset-0 z-[9999] bg-gradient-to-b from-sky-50 to-emerald-50/30 overflow-hidden"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
-        {/* Header compacto */}
         <div className="flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-50">
           <div>
             <h1 className="text-lg font-extrabold text-slate-800 tracking-tight leading-none">El Árbol del Declive</h1>
@@ -386,9 +404,22 @@ export default function ArbolDeProblemasRealista() {
           </button>
         </div>
 
-        {/* Árbol scrollable */}
-        <div className="overflow-x-auto overflow-y-auto pb-8">
-          <div className="pt-4 px-4" style={{ minWidth: "1080px" }}>
+        <div
+          ref={treeContainerRef}
+          className="pt-4 px-4 relative overflow-hidden"
+          style={{ height: `${850 * containerScale}px` }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "1080px",
+              height: "850px",
+              transform: `scale(${containerScale})`,
+              transformOrigin: "top left",
+            }}
+          >
             <ArbolContent hoveredIndex={hoveredIndex} setHoveredIndex={setHoveredIndex} />
           </div>
         </div>
@@ -396,7 +427,7 @@ export default function ArbolDeProblemasRealista() {
     );
   }
 
-  // ── Vista desktop ───────────────────────────────────────────────────────────
+  // Vista desktop
   return (
     <section className="min-h-screen py-16 px-4 bg-gradient-to-b from-sky-50 to-emerald-50/30 font-sans flex flex-col items-center overflow-hidden">
       <div className="text-center mb-12">
@@ -404,8 +435,24 @@ export default function ArbolDeProblemasRealista() {
         <p className="text-slate-500 mt-3 text-lg font-medium">Pasa el ratón sobre un título para revelar la conexión completa</p>
       </div>
 
-      <div className="w-full overflow-x-auto pb-24 flex justify-center custom-scrollbar">
-        <ArbolContent hoveredIndex={hoveredIndex} setHoveredIndex={setHoveredIndex} />
+      <div
+        ref={treeContainerRef}
+        className="w-full max-w-[1080px] mx-auto pb-24 relative"
+        style={{ height: `${850 * containerScale}px` }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "1080px",
+            height: "850px",
+            transform: `scale(${containerScale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <ArbolContent hoveredIndex={hoveredIndex} setHoveredIndex={setHoveredIndex} />
+        </div>
       </div>
 
       <style jsx>{`
