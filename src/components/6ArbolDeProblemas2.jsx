@@ -98,7 +98,7 @@ const getRootBorderColor = (colorTema) => {
 // ── El árbol en sí (reutilizable) ───────────────────────────────────────────
 function ArbolContent({ hoveredIndex, setHoveredIndex }) {
   return (
-    <div className="relative min-w-[1080px]" style={{ height: "850px" }}>
+    <div className="relative min-w-[1080px]" style={{ height: "920px" }}>
 
       {/* COPA */}
       <div className="absolute left-1/2 top-8 -translate-x-1/2 w-[680px] h-[380px] bg-emerald-600 rounded-[50%_50%_38%_38%] shadow-2xl z-10" />
@@ -167,7 +167,7 @@ function ArbolContent({ hoveredIndex, setHoveredIndex }) {
                 absolute p-5 rounded-[2rem] border-t-[12px] shadow-xl cursor-pointer pointer-events-auto
                 transition-colors duration-300
                 ${getLeafColorClasses(nodo.colorTema)}
-                ${isHovered ? "ring-8 ring-white/60 shadow-2xl z-40" : "z-30"}
+                ${isHovered ? "ring-8 ring-white/60 shadow-2xl z-[999]" : "z-30"}
                 ${isDimmed ? "opacity-30 scale-95 blur-[1px]" : "opacity-100"}
               `}
               style={{ left: `${leafX}px`, top: `${leafY}px`, overflow: "hidden" }}
@@ -237,7 +237,7 @@ function ArbolContent({ hoveredIndex, setHoveredIndex }) {
                   bg-[#fdfbf7] p-5 rounded-3xl border-b-[10px] shadow-lg cursor-pointer
                   pointer-events-auto z-30 flex-shrink-0
                   ${getRootBorderColor(nodo.colorTema)}
-                  ${isHovered ? "ring-4 ring-amber-400 shadow-2xl z-40" : ""}
+                  ${isHovered ? "ring-4 ring-amber-400 shadow-2xl z-[999]" : ""}
                   ${isDimmed ? "blur-[1px]" : ""}
                 `}
                 style={{ overflow: "visible" }}
@@ -299,7 +299,7 @@ export default function ArbolDeProblemasRealista() {
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
-  // Escalado automático
+  // Escalado automático (con margen extra para evitar cortes al hacer hover)
   useEffect(() => {
     const updateScale = () => {
       if (!treeContainerRef.current) return;
@@ -308,12 +308,15 @@ export default function ArbolDeProblemasRealista() {
       let containerHeight = container.clientHeight;
 
       if (isMobile && isFullscreen) {
-        containerHeight = window.innerHeight - 70; // header
+        containerHeight = window.innerHeight - 70; // espacio del header
       }
 
-      const scaleX = containerWidth / 1080;
-      const scaleY = containerHeight / 850;
-      const newScale = Math.min(scaleX, scaleY, 1); // nunca más grande que 1x
+      const targetWidth = 1080;
+      const targetHeight = 920; // +70px de margen para expansiones de hover
+
+      const scaleX = containerWidth / targetWidth;
+      const scaleY = containerHeight / targetHeight;
+      const newScale = Math.min(scaleX, scaleY, 1);
 
       setContainerScale(newScale);
     };
@@ -383,7 +386,7 @@ export default function ArbolDeProblemasRealista() {
     );
   }
 
-  // Vista fullscreen móvil
+  // Vista fullscreen móvil (corrigido: overflow-visible + centrado + margen extra)
   if (isMobile && isFullscreen) {
     return (
       <div
@@ -406,18 +409,15 @@ export default function ArbolDeProblemasRealista() {
 
         <div
           ref={treeContainerRef}
-          className="pt-4 px-4 relative overflow-hidden"
-          style={{ height: `${850 * containerScale}px` }}
+          className="pt-4 px-4 flex justify-center relative overflow-visible"
+          style={{ height: `${920 * containerScale}px` }}
         >
           <div
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
               width: "1080px",
-              height: "850px",
+              height: "920px",
               transform: `scale(${containerScale})`,
-              transformOrigin: "top left",
+              transformOrigin: "top center",
             }}
           >
             <ArbolContent hoveredIndex={hoveredIndex} setHoveredIndex={setHoveredIndex} />
@@ -427,7 +427,7 @@ export default function ArbolDeProblemasRealista() {
     );
   }
 
-  // Vista desktop
+  // Vista desktop (corrigido: centrado perfecto + z-index alto en hover)
   return (
     <section className="min-h-screen py-16 px-4 bg-gradient-to-b from-sky-50 to-emerald-50/30 font-sans flex flex-col items-center overflow-hidden">
       <div className="text-center mb-12">
@@ -437,18 +437,15 @@ export default function ArbolDeProblemasRealista() {
 
       <div
         ref={treeContainerRef}
-        className="w-full max-w-[1080px] mx-auto pb-24 relative"
-        style={{ height: `${850 * containerScale}px` }}
+        className="w-full max-w-[1080px] mx-auto pb-24 flex justify-center relative overflow-visible"
+        style={{ height: `${920 * containerScale}px` }}
       >
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
             width: "1080px",
-            height: "850px",
+            height: "920px",
             transform: `scale(${containerScale})`,
-            transformOrigin: "top left",
+            transformOrigin: "top center",
           }}
         >
           <ArbolContent hoveredIndex={hoveredIndex} setHoveredIndex={setHoveredIndex} />
