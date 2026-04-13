@@ -4,7 +4,7 @@ import Ikigais from './components/2Ikigais';
 import Conceptos from './components/3Conceptos';
 import Emprendimientos from './components/4EmprendimientosSociales';
 import Arbol1 from './components/5ArbolDeProblemas1';
-// import Arbol2 from './components/6ArbolDeProblemas2';
+import Arbol2 from './components/6ArbolDeProblemas2';
 // import Evidencias from './components/7Evidencias';
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
       <Conceptos />
       <Emprendimientos />
       <Arbol1 />
-      {/* <Arbol2 /> */}
+      <Arbol2 />
       {/* <Evidencias /> */}
 
     </main>
