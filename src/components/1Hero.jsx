@@ -7,32 +7,32 @@ export default function Hero() {
       {
         nombre: "Benites Fierro Alexander Aiken",
         porcentaje: 100,
-        foto: "public/images/sem04/Integrante_1.png",
+        foto: "/images/sem04/Integrante_1.png",
       },
       {
         nombre: "Ccente Mejia Jose Carlos",
         porcentaje: 100,
-        foto: "public/images/sem04/Integrante_2.png",
+        foto: "/images/sem04/Integrante_2.png",
       },
       {
         nombre: "Espinoza Paucar Karen Yeny",
         porcentaje: 100,
-        foto: "public/images/sem04/Integrante_3.png",
+        foto: "/images/sem04/Integrante_3.png",
       },
       {
         nombre: "Crispin Bendezu Rick Bernie",
         porcentaje: 100,
-        foto: "public/images/sem04/Integrante_4.png",
+        foto: "/images/sem04/Integrante_4.png",
       },
       {
         nombre: "García Betancourt Israel",
         porcentaje: 100,
-        foto: "public/images/sem04/Integrante_5.png",
+        foto: "/images/sem04/Integrante_5.png",
       },
       {
         nombre: "Veliz Durand Vieri Del Piero",
         porcentaje: 100,
-        foto: "public/images/sem04/Integrante_6.png",
+        foto: "/images/sem04/Integrante_6.png",
       },
     ],
   };
