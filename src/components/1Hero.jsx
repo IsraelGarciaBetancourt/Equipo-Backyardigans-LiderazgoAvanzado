@@ -44,7 +44,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0 pointer-events-none">
         {/* La imagen de fondo */}
         <img 
-          src="/images/sem04/UContinental.png" 
+          src="/images/sem04/UContinental.webp" 
           alt="Universidad Continental" 
           className="w-full h-full object-cover opacity-40" // opacity-40 para que no sea tan brillante y permita leer el texto
         />
